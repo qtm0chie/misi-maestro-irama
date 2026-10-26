@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 MISI MAESTRO IRAMA 🎵</title>
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700&display=swap');
+        
+        * {
+            font-family: 'Quicksand', sans-serif;
+            user-select: none;
+        }
+
+        h1, h2, h3, .font-game {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .bg-pattern {
+            background-color: #8EC5FC;
+            background-image: linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%);
+        }
+
+        .btn-game {
+            font-family: 'Fredoka One', cursive;
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-game:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-game:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .pulse-slow {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes celebrate-pop { from { opacity: 0; transform: scale(.72) translateY(18px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .celebrate-pop { animation: celebrate-pop .45s cubic-bezier(.2,.8,.2,1) both; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9333ea;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen flex items-center justify-center p-2 md:p-4">
+
+    <!-- AUDIO ELEMENT (Gunakan fail audio yang dilampirkan) -->
+    <!-- Tukar 'bgm.mp3' mengikut nama fail audio anda jika perlu -->
+    <audio id="bgm-player" loop preload="auto">
+        <source src="bgm.mp3" type="audio/mpeg">
+        <source src="audio.wav" type="audio/wav">
+        Pelayar anda tidak menyokong elemen audio.
+    </audio>
+
+    <!-- MAIN CONTAINER GAME -->
+    <div id="app" class="w-full max-w-4xl bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border-4 border-purple-500 overflow-hidden flex flex-col min-h-[650px] relative">
+
+        <!-- TOP BAR / NAVIGATION -->
+        <header class="bg-purple-600 text-white px-4 py-3 flex justify-between items-center shadow-md z-20">
+            <div class="flex items-center gap-2">
+                <button onclick="confirmExitHome()" class="bg-purple-500 hover:bg-purple-700 text-white p-2 px-3 rounded-2xl text-sm font-game flex items-center gap-1 shadow">
+                    <i class="fas fa-home"></i> <span class="hidden sm:inline">UTAMA</span>
+                </button>
+                <button onclick="openSettings()" class="bg-purple-500 hover:bg-purple-700 text-white p-2 px-3 rounded-2xl text-sm font-game flex items-center gap-1 shadow">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button id="quick-mute-btn" onclick="toggleMute()" class="bg-purple-500 hover:bg-purple-700 text-white p-2 px-3 rounded-2xl text-sm font-game flex items-center gap-1 shadow">
+                    <i class="fas fa-volume-up" id="quick-mute-icon"></i>
+                </button>
+            </div>
+
+            <div id="player-status" class="hidden flex items-center gap-3 bg-purple-700/60 px-3 py-1 rounded-full border border-purple-400">
+                <span id="nav-avatar" class="text-xl">🎵</span>
+                <span id="nav-name" class="font-game text-amber-300 text-sm max-w-[100px] truncate">Pemain</span>
+            </div>
+
+            <div class="bg-amber-400 text-purple-900 font-game px-4 py-1 rounded-full text-base sm:text-lg flex items-center gap-1 shadow-inner border-2 border-amber-300">
+                ⭐ <span id="current-score">0</span>
+            </div>
+        </header>
+
+        <!-- CONTENT VIEWS -->
+        <main class="flex-1 flex flex-col justify-center items-center p-4 text-center relative overflow-y-auto">
+
+            <!-- 1. MAIN MENU -->
+            <section id="view-menu" class="w-full max-w-lg flex flex-col items-center gap-5 my-auto py-6">
+                <div class="relative">
+                    <h1 class="text-4xl sm:text-5xl text-purple-600 drop-shadow-[0_4px_0_#fde047] tracking-wider">
+                        🎵 MISI MAESTRO IRAMA 🎵
+                    </h1>
+                    <p class="text-gray-600 font-bold text-lg mt-2">"Jom jadi Maestro Irama!"</p>
+                </div>
+
+                <div class="flex text-5xl sm:text-6xl gap-4 my-2 animate-bounce">
+                    <span>🎼</span><span>🎤</span><span>🎹</span><span>🥁</span>
+                </div>
+
+                <div class="w-full flex flex-col gap-3 max-w-xs">
+                    <button onclick="startGame()" class="btn-game bg-amber-400 hover:bg-amber-300 text-purple-950 text-xl py-3 rounded-2xl border-b-4 border-amber-600 flex items-center justify-center gap-2">
+                        ▶️ MULA BERMAIN
+                    </button>
+                    <button onclick="showView('view-tutorial')" class="btn-game bg-sky-400 hover:bg-sky-300 text-white text-lg py-2.5 rounded-2xl border-b-4 border-sky-600 flex items-center justify-center gap-2">
+                        📖 CARA BERMAIN
+                    </button>
+                    <button onclick="openLeaderboard()" class="btn-game bg-emerald-400 hover:bg-emerald-300 text-white text-lg py-2.5 rounded-2xl border-b-4 border-emerald-600 flex items-center justify-center gap-2">
+                        🏆 LEADERBOARD
+                    </button>
+                    <button onclick="openSettings()" class="btn-game bg-purple-400 hover:bg-purple-300 text-white text-lg py-2.5 rounded-2xl border-b-4 border-purple-600 flex items-center justify-center gap-2">
+                        ⚙️ TETAPAN
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. NAME INPUT -->
+            <section id="view-name" class="hidden w-full max-w-md flex flex-col items-center gap-6 my-auto">
+                <div class="bg-amber-100 border-4 border-amber-400 p-6 rounded-3xl w-full shadow-lg">
+                    <h2 class="text-2xl sm:text-3xl text-purple-700 mb-2">🎵 SIAPA MAESTRO HARI INI?</h2>
+                    <p class="text-gray-600 font-semibold mb-4 text-sm">Masukkan nama anda untuk memulakan misi!</p>
+
+                    <input type="text" id="input-player-name" placeholder="Masukkan nama anda..." maxlength="12"
+                        class="w-full px-4 py-3 text-center text-xl font-game rounded-2xl border-2 border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-300 text-purple-900 mb-4 shadow-inner">
+
+                    <button onclick="submitName()" class="btn-game w-full bg-emerald-500 hover:bg-emerald-400 text-white text-xl py-3 rounded-2xl border-b-4 border-emerald-700">
+                        ➡️ TERUSKAN
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. CHARACTER SELECTION -->
+            <section id="view-char" class="hidden w-full max-w-xl flex flex-col items-center gap-5 my-auto">
+                <h2 class="text-3xl text-purple-700">🎭 PILIH WATAK ANDA</h2>
+                <p class="text-gray-600 font-semibold text-sm">Pilih rakan pengembaraan muzik anda!</p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+                    <div onclick="selectCharacter('Mimi', '🐱')" class="char-card bg-white border-4 border-gray-200 hover:border-purple-500 rounded-2xl p-4 cursor-pointer transition transform hover:-translate-y-1 shadow-md flex flex-col items-center">
+                        <span class="text-6xl mb-2">🐱</span>
+                        <span class="font-game text-lg text-purple-800">Mimi</span>
+                    </div>
+                    <div onclick="selectCharacter('Didi', '🐶')" class="char-card bg-white border-4 border-gray-200 hover:border-purple-500 rounded-2xl p-4 cursor-pointer transition transform hover:-translate-y-1 shadow-md flex flex-col items-center">
+                        <span class="text-6xl mb-2">🐶</span>
+                        <span class="font-game text-lg text-purple-800">Didi</span>
+                    </div>
+                    <div onclick="selectCharacter('Kiki', '🦊')" class="char-card bg-white border-4 border-gray-200 hover:border-purple-500 rounded-2xl p-4 cursor-pointer transition transform hover:-translate-y-1 shadow-md flex flex-col items-center">
+                        <span class="text-6xl mb-2">🦊</span>
+                        <span class="font-game text-lg text-purple-800">Kiki</span>
+                    </div>
+                    <div onclick="selectCharacter('Rara', '🐰')" class="char-card bg-white border-4 border-gray-200 hover:border-purple-500 rounded-2xl p-4 cursor-pointer transition transform hover:-translate-y-1 shadow-md flex flex-col items-center">
+                        <span class="text-6xl mb-2">🐰</span>
+                        <span class="font-game text-lg text-purple-800">Rara</span>
+                    </div>
+                </div>
+
+                <button id="btn-confirm-char" onclick="confirmCharacter()" disabled class="btn-game w-full max-w-xs bg-gray-400 text-white text-xl py-3 rounded-2xl border-b-4 border-gray-600 cursor-not-allowed">
+                    ➡️ PILIH WATAK
+                </button>
+            </section>
+
+            <!-- 4. TUTORIAL -->
+            <section id="view-tutorial" class="hidden w-full max-w-lg flex flex-col items-center gap-4 my-auto text-left">
+                <h2 class="text-3xl text-purple-700 text-center w-full">📖 CARA BERMAIN</h2>
+                
+                <div class="bg-white/80 border-2 border-purple-300 rounded-2xl p-4 space-y-3 shadow w-full text-sm sm:text-base">
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">⭐</span>
+                        <div>
+                            <h3 class="font-game text-purple-800 text-lg">LEVEL 1: KENALI IRAMA</h3>
+                            <p class="text-gray-600">Lihat not atau corak irama dan pilih sebutan irama yang betul (Contoh: ♩ = TA, 𝅗𝅥 = TA-A, ♪♪ = TI-TI, 𝄽 = SA).</p>
+                        </div>
+                    </div>
+                    <hr border-purple-100>
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">🎤</span>
+                        <div>
+                            <h3 class="font-game text-purple-800 text-lg">LEVEL 2: SEBUT IRAMA</h3>
+                            <p class="text-gray-600">Lihat corak irama dan sebutkan menggunakan suara anda melalui mikrofon.</p>
+                        </div>
+                    </div>
+                    <hr border-purple-100>
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl">🕺</span>
+                        <div>
+                            <h3 class="font-game text-purple-800 text-lg">LEVEL 3: GERAKKAN IRAMA</h3>
+                            <p class="text-gray-600">Lakukan aksi pergerakan mengikut urutan yang diberikan di hadapan kamera.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="goToMissionMap()" class="btn-game w-full bg-emerald-500 hover:bg-emerald-400 text-white text-xl py-3 rounded-2xl border-b-4 border-emerald-700 text-center">
+                    ➡️ FAHAM, JOM MAIN!
+                </button>
+            </section>
+
+            <!-- 5. MISSION MAP -->
+            <section id="view-map" class="hidden w-full max-w-md flex flex-col items-center gap-5 my-auto">
+                <h2 class="text-3xl text-purple-700">🗺️ MISI MAESTRO IRAMA</h2>
+                
+                <div class="w-full flex flex-col gap-4">
+                    <!-- Level 1 Node -->
+                    <div id="node-lvl1" onclick="enterLevel(1)" class="bg-white border-4 border-emerald-400 hover:border-emerald-500 p-4 rounded-2xl shadow-md flex items-center justify-between cursor-pointer transition transform hover:scale-105">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">⭐</span>
+                            <div class="text-left">
+                                <h3 class="font-game text-purple-900 text-lg">LEVEL 1</h3>
+                                <p class="text-sm font-bold text-emerald-600">🎵 KENALI IRAMA</p>
+                            </div>
+                        </div>
+                        <span id="badge-lvl1" class="bg-emerald-100 text-emerald-700 font-game px-3 py-1 rounded-full text-xs">🔓 TERBUKA</span>
+                    </div>
+
+                    <div class="text-2xl text-purple-400">↓</div>
+
+                    <!-- Level 2 Node -->
+                    <div id="node-lvl2" onclick="enterLevel(2)" class="bg-gray-100 border-4 border-gray-300 p-4 rounded-2xl shadow-sm flex items-center justify-between opacity-75 cursor-not-allowed">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">🎤</span>
+                            <div class="text-left">
+                                <h3 class="font-game text-gray-700 text-lg">LEVEL 2</h3>
+                                <p class="text-sm font-bold text-gray-500">SEBUT IRAMA</p>
+                            </div>
+                        </div>
+                        <span id="badge-lvl2" class="bg-gray-200 text-gray-600 font-game px-3 py-1 rounded-full text-xs">🔒 TERKUNCI</span>
+                    </div>
+
+                    <div class="text-2xl text-purple-400">↓</div>
+
+                    <!-- Level 3 Node -->
+                    <div id="node-lvl3" onclick="enterLevel(3)" class="bg-gray-100 border-4 border-gray-300 p-4 rounded-2xl shadow-sm flex items-center justify-between opacity-75 cursor-not-allowed">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">🕺</span>
+                            <div class="text-left">
+                                <h3 class="font-game text-gray-700 text-lg">LEVEL 3</h3>
+                                <p class="text-sm font-bold text-gray-500">GERAKKAN IRAMA</p>
+                            </div>
+                        </div>
+                        <span id="badge-lvl3" class="bg-gray-200 text-gray-600 font-game px-3 py-1 rounded-full text-xs">🔒 TERKUNCI</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. LEVEL 1: KENALI IRAMA -->
+            <section id="view-lvl1" class="hidden w-full max-w-lg flex flex-col items-center gap-4 my-auto">
+                <div class="w-full flex justify-between items-center text-sm font-bold text-purple-800">
+                    <span>SOALAN <span id="l1-q-num">1</span>/5</span>
+                    <span id="l1-feedback-badge" class="hidden bg-amber-300 text-purple-900 px-3 py-1 rounded-full font-game"></span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                    <div id="l1-progress" class="bg-amber-400 h-full w-1/5 transition-all duration-300"></div>
+                </div>
+
+                <div class="bg-white border-4 border-purple-300 p-6 rounded-3xl w-full shadow-lg text-center my-2">
+                    <span id="l1-symbol" class="text-7xl block mb-2 font-game text-purple-700">♩</span>
+                    <h3 id="l1-note-name" class="font-game text-gray-500 text-lg">KROCHET</h3>
+                    <p class="text-purple-900 font-bold mt-3 text-base">Apakah sebutan bagi not ini?</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 w-full" id="l1-options">
+                    <!-- Dynamic Options -->
+                </div>
+            </section>
+
+            <!-- LEVEL COMPLETION CELEBRATION -->
+            <section id="view-level-complete" class="hidden w-full max-w-lg flex flex-col items-center gap-5 my-auto py-8">
+                <div class="celebrate-pop bg-gradient-to-br from-amber-100 via-pink-100 to-sky-100 border-4 border-amber-400 rounded-[2rem] p-7 w-full shadow-xl">
+                    <div class="text-6xl mb-3" id="complete-avatar">🎵</div>
+                    <div class="text-4xl animate-bounce">🎉 ⭐ 🎉</div>
+                    <h1 id="complete-title" class="text-3xl sm:text-4xl text-purple-700 mt-3">LEVEL 1 SELESAI!</h1>
+                    <p id="complete-message" class="text-purple-900 font-bold mt-2">Hebat! Anda kenal semua irama!</p>
+                    <div class="mt-5 bg-white/80 rounded-2xl p-4">
+                        <p class="font-game text-purple-700">BONUS MISI</p>
+                        <p id="complete-bonus" class="text-3xl font-game text-amber-600">+500 ⭐</p>
+                    </div>
+                    <p id="complete-unlock" class="mt-4 text-sm font-bold text-emerald-700">🔓 Level seterusnya kini terbuka!</p>
+                    <div class="text-4xl mt-4">✨ 🎼 🌈 🎼 ✨</div>
+                </div>
+                <button id="btn-continue-celebration" onclick="continueAfterCelebration()" class="btn-game w-full bg-emerald-500 hover:bg-emerald-400 text-white text-xl py-3 rounded-2xl border-b-4 border-emerald-700">➡️ TERUSKAN MISI</button>
+            </section>
+
+            <!-- 7. LEVEL 2: SEBUT IRAMA -->
+            <section id="view-lvl2" class="hidden w-full max-w-lg flex flex-col items-center gap-4 my-auto">
+                <div class="w-full flex justify-between items-center text-sm font-bold text-purple-800">
+                    <span>ROUND <span id="l2-round-num">1</span>/5</span>
+                    <span id="l2-score-status" class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-game">⭐ +150 / Corak</span>
+                </div>
+
+                <div class="bg-white border-4 border-purple-300 p-6 rounded-3xl w-full shadow-lg text-center">
+                    <p class="text-xs font-bold text-purple-600 mb-1">CORAK IRAMA:</p>
+                    <div id="l2-pattern-display" class="text-4xl font-game text-purple-900 mb-2 tracking-widest">♩ | ♪♪ | ♩</div>
+                    <div id="l2-target-text" class="text-lg font-bold text-amber-600 bg-amber-50 py-1 px-4 rounded-full inline-block">TA | TI-TI | TA</div>
+                </div>
+
+                <!-- Audio Ducking Status Container -->
+                <div id="l2-mic-status-box" class="bg-gray-100 border-2 border-gray-300 rounded-2xl p-4 w-full flex flex-col items-center justify-center min-h-[110px]">
+                    <i class="fas fa-microphone text-4xl text-gray-400 mb-2" id="l2-mic-icon"></i>
+                    <p id="l2-status-text" class="text-sm font-bold text-gray-600">Tekan "MULA RAKAM" dan sebutkan corak di atas!</p>
+                </div>
+
+                <div class="flex gap-3 w-full">
+                    <button id="btn-start-record" onclick="startL2Recording()" class="btn-game flex-1 bg-red-500 hover:bg-red-400 text-white text-lg py-3 rounded-2xl border-b-4 border-red-700 flex items-center justify-center gap-2">
+                        🎤 MULA RAKAM
+                    </button>
+                    <button id="btn-next-l2" onclick="nextL2Round()" class="hidden btn-game flex-1 bg-emerald-500 hover:bg-emerald-400 text-white text-lg py-3 rounded-2xl border-b-4 border-emerald-700 flex items-center justify-center gap-2">
+                        ➡️ ROUND SETERUSNYA
+                    </button>
+                </div>
+            </section>
+
+            <!-- 8. LEVEL 3: GERAKKAN IRAMA -->
+            <section id="view-lvl3" class="hidden w-full max-w-xl flex flex-col items-center gap-3 my-auto">
+                <div class="w-full flex justify-between items-center text-sm font-bold text-purple-800">
+                    <span>ROUND <span id="l3-round-num">1</span>/3</span>
+                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-game">💃 CAMERA CHALLENGE</span>
+                </div>
+
+                <!-- Pattern Box -->
+                <div class="bg-white border-2 border-purple-300 p-3 rounded-2xl w-full text-center">
+                    <div id="l3-pattern-display" class="text-3xl font-game text-purple-900">♩ | ♪♪ | ♩</div>
+                </div>
+
+                <!-- Preview / Pre-Round Screen -->
+                <div id="l3-preround-box" class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 w-full text-center space-y-3">
+                    <p class="font-bold text-purple-900">Lihat corak dan padanan pergerakannya dahulu!</p>
+                    <div id="l3-mapping" class="space-y-1 text-sm font-bold text-purple-900"></div>
+                    <p id="l3-example-status" class="font-game text-lg text-amber-700 min-h-7">Pilih LIHAT CONTOH untuk berlatih.</p>
+                    <button onclick="playL3Example()" class="btn-game bg-sky-500 hover:bg-sky-400 text-white px-4 py-2 rounded-xl text-sm border-b-4 border-sky-700">
+                        ▶️ LIHAT CONTOH AKSI
+                    </button>
+                    <br>
+                    <button onclick="startL3CameraChallenge()" class="btn-game bg-emerald-500 hover:bg-emerald-400 text-white text-lg px-6 py-3 rounded-2xl border-b-4 border-emerald-700 mt-2">
+                        📹 MULA ROUND
+                    </button>
+                </div>
+
+                <!-- Active Camera & Action Tracking Screen -->
+                <div id="l3-active-box" class="hidden w-full flex flex-col items-center gap-3">
+                    <!-- Video Frame -->
+                    <div class="relative w-full max-w-xl h-72 sm:h-96 bg-black rounded-2xl overflow-hidden border-4 border-purple-500 shadow">
+                        <video id="l3-video" class="w-full h-full object-cover" autoplay playsinline muted></video>
+                        <div id="l3-cam-fallback" class="absolute inset-0 flex flex-col items-center justify-center text-white bg-gray-900 p-4 text-center">
+                            <i class="fas fa-camera text-3xl mb-2 text-purple-400"></i>
+                            <p class="text-xs">Kamera belum dibuka. Benarkan akses untuk mengesan aksi anda.</p>
+                            <button onclick="startL3CameraChallenge()" class="btn-game bg-sky-500 text-white px-3 py-1 rounded-lg mt-2 text-xs">📹 CUBA BUKA KAMERA</button>
+                        </div>
+                        <div id="l3-action-overlay" class="absolute top-2 left-2 bg-black/60 text-amber-300 font-game px-3 py-1 rounded-full text-xs">
+                            🎥 PAPARAN KAMERA
+                        </div>
+                    </div>
+
+                    <p id="l3-detection-note" class="text-xs text-purple-800 bg-amber-50 border border-amber-200 rounded-xl p-2">Pastikan muka, bahu dan kedua-dua tangan kelihatan. Aksi kaki tidak diperlukan.</p>
+                    <!-- Sequential Actions List -->
+                    <div class="w-full space-y-2 text-left" id="l3-actions-list">
+                        <!-- Dynamic Actions UI -->
+                    </div>
+
+                    <button id="btn-next-l3" onclick="nextL3Round()" class="hidden btn-game w-full bg-emerald-500 hover:bg-emerald-400 text-white text-lg py-3 rounded-2xl border-b-4 border-emerald-700">
+                        ➡️ TERUSKAN
+                    </button>
+                </div>
+            </section>
+
+            <!-- 9. FINAL RESULT -->
+            <section id="view-result" class="hidden w-full max-w-md flex flex-col items-center gap-4 my-auto">
+                <div class="text-center">
+                    <h1 class="text-3xl text-purple-700">🎉 TAHNIAH! 🎉</h1>
+                    <p class="font-game text-xl text-amber-500 mt-1">ANDA TELAH MENJADI</p>
+                    <h2 class="text-3xl text-purple-900 font-game">🏆 MAESTRO IRAMA!</h2>
+                </div>
+
+                <div class="bg-amber-100 border-4 border-amber-400 p-5 rounded-3xl w-full shadow-lg text-left space-y-2">
+                    <div class="flex items-center gap-3 border-b border-amber-200 pb-2 mb-2">
+                        <span id="res-avatar" class="text-4xl">🐱</span>
+                        <div>
+                            <h3 id="res-name" class="font-game text-purple-900 text-xl">Nama Pemain</h3>
+                            <p class="text-xs text-purple-700 font-bold">Maestro Irama Sekolah</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between text-sm font-bold text-gray-700">
+                        <span>⭐ Markah Level 1:</span>
+                        <span id="res-l1-score" class="text-purple-800">0</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-gray-700">
+                        <span>🎤 Markah Level 2:</span>
+                        <span id="res-l2-score" class="text-purple-800">0</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-gray-700">
+                        <span>🕺 Markah Level 3:</span>
+                        <span id="res-l3-score" class="text-purple-800">0</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-bold text-gray-700">
+                        <span>🔥 Bonus Penyelesaian:</span>
+                        <span id="res-bonus-score" class="text-purple-800">0</span>
+                    </div>
+                    <hr class="border-amber-300 my-1">
+                    <div class="flex justify-between text-lg font-game text-purple-950">
+                        <span>🏆 JUMLAH MARKAH:</span>
+                        <span id="res-total-score" class="text-amber-600">0</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2 w-full">
+                    <button onclick="openLeaderboard()" class="btn-game w-full bg-emerald-500 hover:bg-emerald-400 text-white text-lg py-2.5 rounded-2xl border-b-4 border-emerald-700">
+                        🏆 LIHAT LEADERBOARD
+                    </button>
+                    <button onclick="resetAndPlayAgain()" class="btn-game w-full bg-amber-400 hover:bg-amber-300 text-purple-950 text-lg py-2.5 rounded-2xl border-b-4 border-amber-600">
+                        🔄 MAIN SEMULA
+                    </button>
+                    <button onclick="showView('view-menu')" class="btn-game w-full bg-purple-500 hover:bg-purple-400 text-white text-lg py-2.5 rounded-2xl border-b-4 border-purple-700">
+                        🏠 MENU UTAMA
+                    </button>
+                </div>
+            </section>
+
+            <!-- 10. LEADERBOARD VIEW -->
+            <section id="view-leaderboard" class="hidden w-full max-w-md flex flex-col items-center gap-4 my-auto">
+                <h2 class="text-3xl text-purple-700">🏆 TOP 3 MAESTRO IRAMA</h2>
+
+                <div class="bg-white border-4 border-purple-300 rounded-3xl p-4 w-full shadow-lg min-h-[220px] flex flex-col justify-center">
+                    <div id="lb-content" class="space-y-3">
+                        <!-- Dynamic Leaderboard Data -->
+                    </div>
+                </div>
+
+                <button onclick="showView('view-menu')" class="btn-game w-full bg-purple-600 hover:bg-purple-500 text-white text-lg py-3 rounded-2xl border-b-4 border-purple-800">
+                    🏠 KEMBALI KE MENU
+                </button>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL SETTINGS -->
+    <div id="modal-settings" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-4 border-purple-500 rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl space-y-5">
+            <h2 class="text-2xl text-purple-800">⚙️ TETAPAN</h2>
+
+            <div class="space-y-3 bg-purple-50 p-4 rounded-2xl border border-purple-200">
+                <label class="font-game text-purple-900 block text-left">🎵 Muzik Latar</label>
+                
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-volume-down text-purple-600"></i>
+                    <input type="range" id="volume-slider" min="0" max="100" value="70" oninput="onVolumeSliderChange(this.value)"
+                        class="w-full accent-purple-600 cursor-pointer">
+                    <i class="fas fa-volume-up text-purple-600"></i>
+                </div>
+                <div class="text-sm font-bold text-purple-700" id="volume-text">70%</div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="setMuteState(false)" class="btn-game flex-1 bg-emerald-500 text-white py-2 rounded-xl text-sm border-b-4 border-emerald-700">
+                        🔊 MUZIK ON
+                    </button>
+                    <button onclick="setMuteState(true)" class="btn-game flex-1 bg-red-500 text-white py-2 rounded-xl text-sm border-b-4 border-red-700">
+                        🔇 MUTE
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="closeSettings()" class="btn-game w-full bg-purple-600 text-white py-2.5 rounded-xl border-b-4 border-purple-800">
+                ◀️ KEMBALI
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRM EXIT HOME -->
+    <div id="modal-confirm-exit" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white border-4 border-amber-400 rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl space-y-4">
+            <div class="text-4xl">⚠️</div>
+            <h3 class="font-game text-purple-900 text-xl">KELUAR KE MENU UTAMA?</h3>
+            <p class="text-sm text-gray-600 font-semibold">Adakah anda pasti mahu keluar? Progress permainan mungkin akan hilang.</p>
+            <div class="flex gap-2">
+                <button onclick="executeExitHome()" class="btn-game flex-1 bg-red-500 text-white py-2 rounded-xl text-sm border-b-4 border-red-700">
+                    YA, KELUAR
+                </button>
+                <button onclick="closeConfirmExit()" class="btn-game flex-1 bg-gray-400 text-white py-2 rounded-xl text-sm border-b-4 border-gray-600">
+                    BATAL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT GAME LOGIC -->
+    <script>
+        /* ====================================================
+           1. GAME STATE & VARIABLES
+           ==================================================== */
+        let gameState = {
+            playerName: "",
+            character: { name: "", avatar: "" },
+            score: 0,
+            levelScores: { l1: 0, l2: 0, l3: 0, bonus: 0 },
+            unlockedLevel: 1,
+            
+            // Audio System
+            targetVolume: 0.7, // User's set volume (0.0 to 1.0)
+            isMuted: false,
+            isDucking: false,
+            
+            // Level 1 Progress
+            l1Index: 0,
+            
+            // Level 2 Progress
+            l2Index: 0,
+            l2Recognition: null,
+            
+            // Level 3 Progress
+            l3Index: 0,
+            l3CurrentActionIndex: 0
+        };
+
+        const bgmPlayer = document.getElementById('bgm-player');
+
+        // Bunyi permainan dijana oleh pelayar; muzik latar kekal menggunakan fail MP3 pilihan pemain.
+        let sfxContext = null;
+        let completedLevel = 0;
+        let poseLandmarker = null;
+        let poseFrameId = null;
+        let lastPoseInferenceAt = 0;
+        let l3ActionDetection = null;
+        function playSfx(kind = 'tap') {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                if (!sfxContext) sfxContext = new AudioCtx();
+                if (sfxContext.state === 'suspended') sfxContext.resume();
+                const notes = kind === 'correct' ? [659, 880, 1175] : kind === 'wrong' ? [247, 196] : kind === 'win' ? [659, 784, 988, 1318, 1568] : [1047, 1397];
+                const now = sfxContext.currentTime;
+                notes.forEach((freq, i) => {
+                    const osc = sfxContext.createOscillator();
+                    const gain = sfxContext.createGain();
+                    osc.type = kind === 'wrong' ? 'triangle' : (kind === 'tap' ? 'triangle' : 'sine');
+                    osc.frequency.value = freq;
+                    const start = now + i * (kind === 'tap' ? .025 : .12);
+                    gain.gain.setValueAtTime(.0001, start);
+                    gain.gain.exponentialRampToValueAtTime(kind === 'tap' ? .22 : (kind === 'win' ? .22 : .17), start + .015);
+                    gain.gain.exponentialRampToValueAtTime(.0001, start + (kind === 'tap' ? .15 : .25));
+                    osc.connect(gain); gain.connect(sfxContext.destination);
+                    osc.start(start); osc.stop(start + .22);
+                });
+            } catch (error) { /* Bunyi tambahan tidak mengganggu permainan jika tidak disokong. */ }
+        }
+
+        function launchConfetti(options = {}) {
+            if (typeof window.confetti === 'function') window.confetti(options);
+        }
+
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('.btn-game')) playSfx('tap');
+        }, true);
+
+        /* Data Level 1 (5 Soalan) */
+        const level1Questions = [
+            { symbol: "♩", name: "KROCHET", answer: "TA", options: ["TA", "TI-TI", "TA-A", "SA"] },
+            { symbol: "𝅗𝅥", name: "MINIM", answer: "TA-A", options: ["TA", "TI-TI", "TA-A", "SA"] },
+            { symbol: "♪♪", name: "KUAVER", answer: "TI-TI", options: ["TA", "TI-TI", "TA-A", "SA"] },
+            { symbol: "𝄽", name: "TANDA REHAT", answer: "SA", options: ["TA", "TI-TI", "TA-A", "SA"] },
+            { symbol: "♩ ♩", name: "DUA KROCHET", answer: "TA TA", options: ["TA TA", "TI-TI TA", "TA-A", "SA SA"] }
+        ];
+
+        /* Data Level 2 (5 Corak) */
+        const level2Patterns = [
+            { pattern: "♩ | ♪♪ | ♩", target: "TA TI-TI TA" },
+            { pattern: "♪♪ | ♩ | 𝅗𝅥", target: "TI-TI TA TA-A" },
+            { pattern: "𝅗𝅥 | ♪♪ | ♩", target: "TA-A TI-TI TA" },
+            { pattern: "♩ | 𝅗𝅥 | ♪♪", target: "TA TA-A TI-TI" },
+            { pattern: "♪♪ | ♪♪ | ♩", target: "TI-TI TI-TI TA" }
+        ];
+
+        /* Data Level 3 (3 Rounds) */
+        const level3Rounds = [
+            {
+                pattern: "♩ | ♪♪ | ♩",
+                actions: [
+                    { id: 1, text: "👏 Tepuk sekali", type: "clap" },
+                    { id: 2, text: "👋 Lambai tangan kiri kemudian kanan", type: "waveLR" },
+                    { id: 3, text: "🙌 Angkat kedua-dua tangan tinggi", type: "raiseBoth" }
+                ]
+            },
+            {
+                pattern: "♪♪ | ♩ | 𝅗𝅥",
+                actions: [
+                    { id: 1, text: "🤗 Sentuh bahu kiri kemudian bahu kanan", type: "touchShoulders" },
+                    { id: 2, text: "👐 Bentuk huruf T dengan tangan", type: "tPose" },
+                    { id: 3, text: "🏠 Bentuk bumbung di atas kepala selama 2 saat", type: "roofHold" }
+                ]
+            },
+            {
+                pattern: "♩ | ♪♪ | 𝅗𝅥",
+                actions: [
+                    { id: 1, text: "🙅 Silang tangan di dada", type: "crossArms" },
+                    { id: 2, text: "🌟 Rapatkan tangan di atas, kemudian buka luas", type: "openAboveHead" },
+                    { id: 3, text: "🗿 Jadi patung dan tahan posisi selama 2 saat", type: "freezePose" }
+                ]
+            }
+        ];
+
+        /* ====================================================
+           2. AUDIO & AUDIO DUCKING SYSTEM
+           ==================================================== */
+        function initAudio() {
+            bgmPlayer.volume = gameState.isMuted ? 0 : gameState.targetVolume;
+            bgmPlayer.play().catch(() => {
+                console.log("Autoplay blocked. Will start on first interaction.");
+            });
+        }
+
+        // Try playing audio on first click anywhere
+        document.body.addEventListener('click', function startAudioOnUserInteraction() {
+            if (bgmPlayer.paused) {
+                bgmPlayer.play().catch(e => console.log(e));
+            }
+        }, { once: true });
+
+        function setAudioVolume(volPercent) {
+            gameState.targetVolume = volPercent / 100;
+            document.getElementById('volume-text').innerText = `${volPercent}%`;
+            document.getElementById('volume-slider').value = volPercent;
+            
+            if (!gameState.isMuted) {
+                applyVolumeWithDucking();
+            }
+        }
+
+        function setMuteState(muted) {
+            gameState.isMuted = muted;
+            const icon = document.getElementById('quick-mute-icon');
+            if (muted) {
+                bgmPlayer.volume = 0;
+                icon.className = "fas fa-volume-mute";
+            } else {
+                applyVolumeWithDucking();
+                icon.className = "fas fa-volume-up";
+            }
+        }
+
+        function toggleMute() {
+            setMuteState(!gameState.isMuted);
+        }
+
+        function applyVolumeWithDucking() {
+            if (gameState.isMuted) return;
+
+            let finalVol = gameState.targetVolume;
+            if (gameState.isDucking) {
+                // Audio Ducking = 15% hingga 20% daripada volume asal atau 0.15 secara absolut
+                finalVol = Math.min(gameState.targetVolume * 0.25, 0.18);
+            }
+
+            smoothFadeVolume(finalVol);
+        }
+
+        function smoothFadeVolume(targetVol, duration = 600) {
+            if (gameState.fadeFrame) cancelAnimationFrame(gameState.fadeFrame);
+            const startVol = bgmPlayer.volume;
+            const startTime = performance.now();
+
+            function updateFade(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                bgmPlayer.volume = startVol + (targetVol - startVol) * progress;
+
+                if (progress < 1) {
+                    gameState.fadeFrame = requestAnimationFrame(updateFade);
+                }
+            }
+            requestAnimationFrame(updateFade);
+        }
+
+        function enableAudioDucking() {
+            gameState.isDucking = true;
+            applyVolumeWithDucking();
+        }
+
+        function disableAudioDucking() {
+            gameState.isDucking = false;
+            applyVolumeWithDucking();
+        }
+
+        /* ====================================================
+           3. UI NAVIGATION & VIEWS
+           ==================================================== */
+        function showView(viewId) {
+            const views = [
+                'view-menu', 'view-name', 'view-char', 'view-tutorial',
+                'view-map', 'view-lvl1', 'view-lvl2', 'view-lvl3',
+                'view-result', 'view-leaderboard', 'view-level-complete'
+            ];
+
+            views.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('current-score').innerText = gameState.score;
+        }
+
+        function addScore(points) {
+            gameState.score += points;
+            updateScoreDisplay();
+        }
+
+        function startGame() {
+            initAudio();
+            if (!gameState.playerName) {
+                showView('view-name');
+            } else {
+                showView('view-map');
+            }
+        }
+
+        function submitName() {
+            const val = document.getElementById('input-player-name').value.trim();
+            if (!val) {
+                alert("Sila masukkan nama anda dahulu!");
+                return;
+            }
+            gameState.playerName = val;
+            showView('view-char');
+        }
+
+        let selectedCharTemp = null;
+        function selectCharacter(name, avatar) {
+            selectedCharTemp = { name, avatar };
+            document.querySelectorAll('.char-card').forEach(card => {
+                card.classList.remove('border-purple-500', 'bg-purple-50');
+            });
+            event.currentTarget.classList.add('border-purple-500', 'bg-purple-50');
+
+            const btn = document.getElementById('btn-confirm-char');
+            btn.disabled = false;
+            btn.className = "btn-game w-full max-w-xs bg-emerald-500 hover:bg-emerald-400 text-white text-xl py-3 rounded-2xl border-b-4 border-emerald-700 cursor-pointer";
+        }
+
+        function confirmCharacter() {
+            if (selectedCharTemp) {
+                gameState.character = selectedCharTemp;
+                
+                // Update nav bar UI
+                document.getElementById('nav-avatar').innerText = gameState.character.avatar;
+                document.getElementById('nav-name').innerText = gameState.playerName;
+                document.getElementById('player-status').classList.remove('hidden');
+
+                showView('view-tutorial');
+            }
+        }
+
+        function goToMissionMap() {
+            updateMissionMapUI();
+            showView('view-map');
+        }
+
+        function updateMissionMapUI() {
+            // Level 2 Node
+            const node2 = document.getElementById('node-lvl2');
+            const badge2 = document.getElementById('badge-lvl2');
+            if (gameState.unlockedLevel >= 2) {
+                node2.className = "bg-white border-4 border-emerald-400 hover:border-emerald-500 p-4 rounded-2xl shadow-md flex items-center justify-between cursor-pointer transition transform hover:scale-105";
+                badge2.className = "bg-emerald-100 text-emerald-700 font-game px-3 py-1 rounded-full text-xs";
+                badge2.innerText = "🔓 TERBUKA";
+            }
+
+            // Level 3 Node
+            const node3 = document.getElementById('node-lvl3');
+            const badge3 = document.getElementById('badge-lvl3');
+            if (gameState.unlockedLevel >= 3) {
+                node3.className = "bg-white border-4 border-emerald-400 hover:border-emerald-500 p-4 rounded-2xl shadow-md flex items-center justify-between cursor-pointer transition transform hover:scale-105";
+                badge3.className = "bg-emerald-100 text-emerald-700 font-game px-3 py-1 rounded-full text-xs";
+                badge3.innerText = "🔓 TERBUKA";
+            }
+        }
+
+        function enterLevel(lvl) {
+            if (lvl > gameState.unlockedLevel) {
+                alert(`Level ${lvl} masih terkunci! Selesaikan Level ${lvl - 1} dahulu.`);
+                return;
+            }
+
+            if (lvl === 1) {
+                gameState.l1Index = 0;
+                loadL1Question();
+                showView('view-lvl1');
+            } else if (lvl === 2) {
+                gameState.l2Index = 0;
+                loadL2Round();
+                showView('view-lvl2');
+            } else if (lvl === 3) {
+                gameState.l3Index = 0;
+                loadL3PreRound();
+                showView('view-lvl3');
+            }
+        }
+
+        /* ====================================================
+           4. LEVEL 1: KENALI IRAMA LOGIC
+           ==================================================== */
+        function loadL1Question() {
+            const q = level1Questions[gameState.l1Index];
+            document.getElementById('l1-q-num').innerText = gameState.l1Index + 1;
+            document.getElementById('l1-progress').style.width = `${((gameState.l1Index + 1) / level1Questions.length) * 100}%`;
+            
+            document.getElementById('l1-symbol').innerText = q.symbol;
+            document.getElementById('l1-note-name').innerText = q.name;
+
+            const optBox = document.getElementById('l1-options');
+            optBox.innerHTML = '';
+
+            const colors = [
+                'bg-emerald-500 hover:bg-emerald-400 border-emerald-700',
+                'bg-sky-500 hover:bg-sky-400 border-sky-700',
+                'bg-amber-400 hover:bg-amber-300 border-amber-600 text-purple-950',
+                'bg-red-500 hover:bg-red-400 border-red-700'
+            ];
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `btn-game ${colors[idx % colors.length]} text-white text-xl py-3 rounded-2xl border-b-4 font-game`;
+                btn.innerText = opt;
+                btn.onclick = () => checkL1Answer(opt);
+                optBox.appendChild(btn);
+            });
+        }
+
+        function checkL1Answer(selected) {
+            const q = level1Questions[gameState.l1Index];
+            const badge = document.getElementById('l1-feedback-badge');
+
+            if (selected === q.answer) {
+                playSfx('correct');
+                addScore(100);
+                gameState.levelScores.l1 += 100;
+                
+                launchConfetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
+                
+                badge.innerText = "🎉 BETUL! +100 ⭐";
+                badge.classList.remove('hidden');
+
+                setTimeout(() => {
+                    badge.classList.add('hidden');
+                    gameState.l1Index++;
+                    if (gameState.l1Index < level1Questions.length) {
+                        loadL1Question();
+                    } else {
+                        // Level 1 Complete
+                        addScore(500); // Bonus
+                        gameState.levelScores.bonus += 500;
+                        gameState.unlockedLevel = Math.max(gameState.unlockedLevel, 2);
+                        showLevelComplete(1, 'Hebat! Anda berjaya mengenal semua corak irama.');
+                    }
+                }, 1000);
+            } else {
+                playSfx('wrong');
+                badge.innerText = "❌ BELUM TEPAT! Cuba lagi.";
+                badge.classList.remove('hidden');
+                setTimeout(() => badge.classList.add('hidden'), 1500);
+            }
+        }
+
+        function showLevelComplete(level, message) {
+            completedLevel = level;
+            document.getElementById('complete-avatar').innerText = gameState.character.avatar || '🎵';
+            document.getElementById('complete-title').innerText = `🎉 LEVEL ${level} SELESAI!`;
+            document.getElementById('complete-message').innerText = message;
+            document.getElementById('complete-bonus').innerText = '+500 ⭐';
+            document.getElementById('complete-unlock').innerText = level === 3 ? '🏆 Semua misi selesai. Anda memang hebat!' : '🔓 Level seterusnya kini terbuka!';
+            document.getElementById('btn-continue-celebration').innerText = level === 3 ? '🏆 LIHAT KEPUTUSAN' : '➡️ TERUSKAN MISI';
+            showView('view-level-complete');
+            playSfx('win');
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const cheer = new SpeechSynthesisUtterance('Yeayyyyy! Tahniah!');
+                cheer.lang = 'ms-MY'; cheer.pitch = 1.7; cheer.rate = 1.05; cheer.volume = 1;
+                setTimeout(() => window.speechSynthesis.speak(cheer), 260);
+            }
+            launchConfetti({ particleCount: 120, spread: 90, origin: { y: .65 } });
+        }
+
+        function continueAfterCelebration() {
+            if (completedLevel === 3) showFinalResult();
+            else goToMissionMap();
+        }
+
+        /* ====================================================
+           5. LEVEL 2: SEBUT IRAMA LOGIC (VOICE / MIC)
+           ==================================================== */
+        function loadL2Round() {
+            const p = level2Patterns[gameState.l2Index];
+            document.getElementById('l2-round-num').innerText = gameState.l2Index + 1;
+            document.getElementById('l2-pattern-display').innerText = p.pattern;
+            document.getElementById('l2-target-text').innerText = p.target;
+
+            document.getElementById('l2-status-text').innerText = "Tekan 'MULA RAKAM' dan sebutkan corak di atas!";
+            document.getElementById('l2-mic-icon').className = "fas fa-microphone text-4xl text-gray-400 mb-2";
+            
+            document.getElementById('btn-start-record').classList.remove('hidden');
+            document.getElementById('btn-next-l2').classList.add('hidden');
+        }
+
+        function startL2Recording() {
+            const statusText = document.getElementById('l2-status-text');
+            const micIcon = document.getElementById('l2-mic-icon');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                statusText.innerText = "Pelayar ini tidak menyokong pengecaman suara. Level ini memerlukan Chrome atau Edge dengan akses mikrofon; jawapan tidak boleh disahkan secara kendiri.";
+                return;
+            }
+            enableAudioDucking();
+            statusText.innerText = "🔴 SEDANG MENDENGAR... Sebut corak dengan jelas.";
+            micIcon.className = "fas fa-microphone text-4xl text-red-500 mb-2 animate-bounce";
+            document.getElementById('btn-start-record').disabled = true;
+            const recognition = new SpeechRecognition();
+            gameState.l2Recognition = recognition;
+            recognition.lang = 'ms-MY';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            recognition.onresult = (event) => finishL2Recording(event.results[0][0].transcript);
+            recognition.onerror = (event) => {
+                disableAudioDucking();
+                document.getElementById('btn-start-record').disabled = false;
+                statusText.innerText = event.error === 'not-allowed'
+                    ? "Akses mikrofon ditolak. Benarkan mikrofon dalam tetapan pelayar dan cuba lagi."
+                    : "Sebutan tidak dapat disahkan. Cuba rakam semula dan sebut corak dengan jelas.";
+                micIcon.className = "fas fa-info-circle text-4xl text-amber-500 mb-2";
+            };
+            recognition.onend = () => {
+                if (gameState.l2Recognition === recognition) {
+                    gameState.l2Recognition = null;
+                    disableAudioDucking();
+                    document.getElementById('btn-start-record').disabled = false;
+                }
+            };
+            try { recognition.start(); }
+            catch (error) {
+                disableAudioDucking();
+                document.getElementById('btn-start-record').disabled = false;
+                statusText.innerText = "Mikrofon tidak dapat dimulakan. Semak kebenaran pelayar dan cuba lagi.";
+            }
+        }
+
+        function finishL2Recording(transcript = "") {
+            const target = level2Patterns[gameState.l2Index].target;
+            const statusText = document.getElementById('l2-status-text');
+            const micIcon = document.getElementById('l2-mic-icon');
+            disableAudioDucking();
+            const normalize = (s) => s.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/TEE\s*TEE/g, 'TITI').replace(/TI\s*TI/g, 'TITI')
+                .replace(/TA\s+A/g, 'TAA').replace(/[^A-Z]/g, '');
+            const heard = normalize(transcript);
+            const expected = normalize(target);
+            const editDistance = (a, b) => {
+                const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+                for (let i = 1; i <= a.length; i++) {
+                    let diagonal = row[0]; row[0] = i;
+                    for (let j = 1; j <= b.length; j++) {
+                        const above = row[j];
+                        row[j] = Math.min(row[j] + 1, row[j - 1] + 1, diagonal + (a[i - 1] === b[j - 1] ? 0 : 1));
+                        diagonal = above;
+                    }
+                }
+                return row[b.length];
+            };
+            // Allow small recognition differences while keeping the whole rhythm sequence in order.
+            const closeEnough = heard.length > 0 && editDistance(heard, expected) <= Math.max(1, Math.ceil(expected.length * .2));
+            micIcon.className = "fas fa-check-circle text-4xl text-emerald-500 mb-2";
+            statusText.innerText = `🔎 Didengar: “${transcript}”`;
+            if (closeEnough) {
+                playSfx('correct');
+                completeL2Round("🎉 Sebutan hampir sama—diterima! +150 ⭐");
+            } else {
+                playSfx('wrong');
+                statusText.innerText += " — Belum sepadan. Cuba rakam semula.";
+            }
+        }
+
+        function completeL2Round(message) {
+            if (document.getElementById('btn-next-l2').classList.contains('hidden') === false) return;
+            addScore(150);
+            gameState.levelScores.l2 += 150;
+            launchConfetti({ particleCount: 30 });
+            document.getElementById('l2-status-text').innerText = message;
+            document.getElementById('btn-start-record').classList.add('hidden');
+            document.getElementById('btn-next-l2').classList.remove('hidden');
+        }
+
+        function nextL2Round() {
+            gameState.l2Index++;
+            if (gameState.l2Index < level2Patterns.length) {
+                loadL2Round();
+            } else {
+                // Level 2 Complete
+                addScore(500); // Bonus
+                gameState.levelScores.bonus += 500;
+                gameState.unlockedLevel = Math.max(gameState.unlockedLevel, 3);
+                showLevelComplete(2, 'Hebat! Anda berjaya menyebut semua corak irama.');
+            }
+        }
+
+        /* ====================================================
+           6. LEVEL 3: GERAKKAN IRAMA LOGIC (CAMERA & ACTIONS)
+           ==================================================== */
+        function loadL3PreRound() {
+            const r = level3Rounds[gameState.l3Index];
+            document.getElementById('l3-round-num').innerText = gameState.l3Index + 1;
+            document.getElementById('l3-pattern-display').innerText = r.pattern;
+            document.getElementById('l3-mapping').innerHTML = r.actions.map((act, idx) =>
+                `<div class="bg-white rounded-lg px-2 py-1">${r.pattern.split(' | ')[idx]} → ${act.text}</div>`
+            ).join('');
+            document.getElementById('l3-example-status').innerText = "Pilih LIHAT CONTOH untuk berlatih.";
+
+            document.getElementById('l3-preround-box').classList.remove('hidden');
+            document.getElementById('l3-active-box').classList.add('hidden');
+        }
+
+        function playL3Example() {
+            const actions = level3Rounds[gameState.l3Index].actions;
+            let i = 0;
+            const show = () => {
+                if (i >= actions.length) return;
+                const symbol = level3Rounds[gameState.l3Index].pattern.split(' | ')[i];
+                document.getElementById('l3-example-status').innerText = `${gameState.character.avatar || '🎵'} ${symbol} → ${actions[i].text}`;
+                i++;
+                setTimeout(show, 1100);
+            };
+            show();
+        }
+
+        async function startL3CameraChallenge() {
+            document.getElementById('l3-action-overlay').innerText = "Membuka kamera dan pengesan aksi...";
+            document.getElementById('l3-cam-fallback').classList.remove('hidden');
+            document.getElementById('l3-cam-fallback').querySelector('p').innerText = "Benarkan kamera dan pastikan muka, bahu serta tangan kelihatan.";
+            document.getElementById('l3-preround-box').classList.add('hidden');
+            document.getElementById('l3-active-box').classList.remove('hidden');
+            enableAudioDucking();
+            try {
+                const cameraReady = await requestL3Camera();
+                if (!cameraReady) throw new Error('Kamera tidak tersedia. Benarkan akses kamera dan cuba semula.');
+                await ensurePoseLandmarker();
+                gameState.l3CurrentActionIndex = 0;
+                document.getElementById('l3-cam-fallback').classList.add('hidden');
+                document.getElementById('l3-action-overlay').innerText = "🟢 PENGESAN AKTIF — BUAT AKSI PERTAMA";
+                renderL3ActionsUI();
+                resetL3ActionDetection();
+                stopPoseTracking();
+                runPoseTracking();
+            } catch (error) {
+                disableAudioDucking();
+                document.getElementById('l3-cam-fallback').classList.remove('hidden');
+                document.getElementById('l3-cam-fallback').querySelector('p').innerText = `${error.message} Permainan hanya boleh diteruskan selepas kamera dan pengesan tersedia.`;
+                const video = document.getElementById('l3-video');
+                if (video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+        }
+
+        async function requestL3Camera() {
+            const video = document.getElementById('l3-video');
+            const fallback = document.getElementById('l3-cam-fallback');
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                fallback.classList.remove('hidden');
+                return false;
+            }
+            try {
+                if (video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                fallback.classList.add('hidden');
+                await video.play();
+                return true;
+            } catch (error) {
+                fallback.classList.remove('hidden');
+                document.getElementById('l3-action-overlay').innerText = "Akses kamera ditolak. Benarkan kamera dan cuba semula.";
+                return false;
+            }
+        }
+
+        async function ensurePoseLandmarker() {
+            if (poseLandmarker) return;
+            document.getElementById('l3-cam-fallback').querySelector('p').innerText = "Memuatkan pengesan badan. Tunggu sebentar...";
+            const vision = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs');
+            const visionFiles = await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+            poseLandmarker = await vision.PoseLandmarker.createFromOptions(visionFiles, {
+                baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' },
+                runningMode: 'VIDEO', numPoses: 1,
+                minPoseDetectionConfidence: .55, minPosePresenceConfidence: .55, minTrackingConfidence: .55
+            });
+        }
+
+        function stopPoseTracking() {
+            if (poseFrameId) cancelAnimationFrame(poseFrameId);
+            poseFrameId = null;
+        }
+
+        function resetL3ActionDetection() {
+            const action = level3Rounds[gameState.l3Index].actions[gameState.l3CurrentActionIndex];
+            l3ActionDetection = action ? { type: action.type, phase: 'start', base: null, since: null, lastTrigger: 0 } : null;
+        }
+
+        function runPoseTracking() {
+            const video = document.getElementById('l3-video');
+            const frame = (now) => {
+                if (!poseLandmarker || video.readyState < 2) {
+                    poseFrameId = requestAnimationFrame(frame);
+                    return;
+                }
+                if (now - lastPoseInferenceAt > 100) {
+                    lastPoseInferenceAt = now;
+                    try {
+                        const result = poseLandmarker.detectForVideo(video, now);
+                        const points = result.landmarks && result.landmarks[0];
+                        if (points) checkL3PoseAction(points, now);
+                        else document.getElementById('l3-action-overlay').innerText = "Pastikan muka, bahu dan tangan kelihatan.";
+                    } catch (error) {
+                        document.getElementById('l3-action-overlay').innerText = "Pengesan sedang melaras. Berdiri menghadap kamera.";
+                    }
+                }
+                poseFrameId = requestAnimationFrame(frame);
+            };
+            poseFrameId = requestAnimationFrame(frame);
+        }
+
+        function checkL3PoseAction(p, now) {
+            const visible = (i) => p[i] && (p[i].visibility ?? 1) > .5;
+            const action = level3Rounds[gameState.l3Index].actions[gameState.l3CurrentActionIndex];
+            if (!action) return;
+            if (!action || !l3ActionDetection || l3ActionDetection.type !== action.type) resetL3ActionDetection();
+            const state = l3ActionDetection;
+            const status = document.getElementById('l3-action-overlay');
+            if (![11, 12, 15, 16].every(visible)) {
+                status.innerText = "Pastikan bahu dan kedua-dua tangan kelihatan dalam kamera.";
+                state.since = null;
+                return;
+            }
+            const shoulderWidth = Math.abs(p[11].x - p[12].x);
+            const handGap = Math.hypot(p[15].x - p[16].x, p[15].y - p[16].y);
+            const leftRaised = p[15].y < p[11].y - .08;
+            const rightRaised = p[16].y < p[12].y - .08;
+            const bothRaised = leftRaised && rightRaised;
+            const holdFor = (condition, duration, message) => {
+                if (!condition) { state.since = null; status.innerText = message; return false; }
+                if (!state.since) state.since = now;
+                const elapsed = now - state.since;
+                status.innerText = `${message} ${Math.min(duration / 1000, elapsed / 1000).toFixed(1)} saat`;
+                if (elapsed >= duration) { completeL3Action(gameState.l3CurrentActionIndex); return true; }
+                return false;
+            };
+
+            if (action.type === 'clap') {
+                if (handGap > shoulderWidth * .85) state.phase = 'open';
+                if (state.phase === 'open' && handGap < shoulderWidth * .38 && now - state.lastTrigger > 900) {
+                    state.lastTrigger = now; completeL3Action(gameState.l3CurrentActionIndex); return;
+                }
+                status.innerText = state.phase === 'open' ? "Rapatkan tangan untuk tepuk!" : "Jauhkan tangan, kemudian tepuk sekali.";
+            } else if (action.type === 'waveLR') {
+                if (state.phase === 'start' && leftRaised) state.phase = 'leftDown';
+                else if (state.phase === 'leftDown' && !leftRaised) state.phase = 'right';
+                if (state.phase === 'right' && rightRaised) completeL3Action(gameState.l3CurrentActionIndex);
+                else status.innerText = state.phase === 'start' ? "Angkat dan lambai tangan kiri dahulu." : state.phase === 'leftDown' ? "Bagus! Turunkan tangan kiri." : "Sekarang angkat dan lambai tangan kanan.";
+            } else if (action.type === 'raiseBoth') {
+                if (holdFor(bothRaised, 650, "Angkat kedua-dua tangan tinggi!")) return;
+            } else if (action.type === 'touchShoulders') {
+                const near = (a, b) => Math.hypot(p[a].x - p[b].x, p[a].y - p[b].y) < .14;
+                if (state.phase !== 'right') {
+                    if (near(15, 11)) state.phase = 'right';
+                    status.innerText = state.phase === 'right' ? "Bahu kiri disentuh! Sekarang sentuh bahu kanan." : "Sentuh bahu kiri dahulu.";
+                } else if (near(16, 12)) completeL3Action(gameState.l3CurrentActionIndex);
+                else status.innerText = "Bahu kiri betul! Sekarang sentuh bahu kanan.";
+            } else if (action.type === 'tPose') {
+                const armsWide = Math.abs(p[15].x - p[16].x) > shoulderWidth * 1.65 &&
+                    Math.abs(p[15].y - p[11].y) < .16 && Math.abs(p[16].y - p[12].y) < .16;
+                if (holdFor(armsWide, 650, "Luruskan tangan ke sisi seperti huruf T!")) return;
+            } else if (action.type === 'roofHold') {
+                const roof = bothRaised && handGap < shoulderWidth * .85 && p[15].y < p[0].y && p[16].y < p[0].y;
+                if (holdFor(roof, 2000, "Rapatkan tangan di atas kepala seperti bumbung!")) return;
+            } else if (action.type === 'crossArms') {
+                if (!state.base) state.base = p[15].x - p[16].x;
+                const crossed = state.base * (p[15].x - p[16].x) < 0 && handGap < shoulderWidth * .65 && (p[15].y + p[16].y) / 2 > (p[11].y + p[12].y) / 2 + .04;
+                if (holdFor(crossed, 650, "Silangkan tangan di depan dada!")) return;
+            } else if (action.type === 'openAboveHead') {
+                if (bothRaised && handGap < shoulderWidth * .7) state.phase = 'closed';
+                if (state.phase === 'closed' && bothRaised && handGap > shoulderWidth * 1.15) {
+                    completeL3Action(gameState.l3CurrentActionIndex); return;
+                }
+                status.innerText = state.phase === 'closed' ? "Bagus! Buka kedua-dua tangan luas." : "Rapatkan kedua-dua tangan di atas kepala dahulu.";
+            } else if (action.type === 'freezePose') {
+                const ids = [11, 12, 13, 14, 15, 16];
+                if (!ids.every(visible)) { state.base = null; state.since = null; status.innerText = "Pastikan bahu dan tangan kelihatan."; return; }
+                const coords = ids.flatMap(i => [p[i].x, p[i].y]);
+                if (!state.base) { state.base = coords; state.since = now; }
+                const movement = Math.max(...coords.map((v, i) => Math.abs(v - state.base[i])));
+                if (movement > .04) { state.base = coords; state.since = now; }
+                const elapsed = now - state.since;
+                status.innerText = `Jadi patung! Tahan... ${Math.min(2, elapsed / 1000).toFixed(1)} / 2.0 saat`;
+                if (elapsed >= 2000) completeL3Action(gameState.l3CurrentActionIndex);
+            }
+        }
+
+        function renderL3ActionsUI() {
+            const roundData = level3Rounds[gameState.l3Index];
+            const actionsBox = document.getElementById('l3-actions-list');
+            actionsBox.innerHTML = '';
+
+            roundData.actions.forEach((act, idx) => {
+                const div = document.createElement('div');
+                div.className = "p-3 rounded-2xl flex items-center justify-between border-2 text-sm font-bold transition-all";
+
+                if (idx < gameState.l3CurrentActionIndex) {
+                    // Completed (🟢)
+                    div.className += " bg-emerald-100 border-emerald-400 text-emerald-900";
+                    div.innerHTML = `<span>🟢 ${act.text}</span> <span class="font-game text-emerald-600">SELESAI!</span>`;
+                } else if (idx === gameState.l3CurrentActionIndex) {
+                    // Current Active (🟡)
+                    div.className += " bg-amber-100 border-amber-400 text-amber-950 animate-pulse";
+                    div.innerHTML = `<div><strong>🟡 ${level3Rounds[gameState.l3Index].pattern.split(' | ')[idx]}</strong><br>${act.text}<br><span class="text-xs">Pengesan kamera sedang menunggu aksi ini.</span></div> <span class="text-2xl">👀</span>`;
+                } else {
+                    // Locked (🔒 / ⚪)
+                    div.className += " bg-gray-100 border-gray-300 text-gray-400 opacity-60";
+                    div.innerHTML = `<span>🔒 ${act.text}</span> <span class="text-xs">TERKUNCI</span>`;
+                }
+
+                actionsBox.appendChild(div);
+            });
+        }
+
+        function completeL3Action(actionIdx) {
+            if (actionIdx !== gameState.l3CurrentActionIndex) return;
+
+            stopPoseTracking();
+            playSfx('correct');
+            addScore(200);
+            gameState.levelScores.l3 += 200;
+            launchConfetti({ particleCount: 25 });
+
+            gameState.l3CurrentActionIndex++;
+            const roundData = level3Rounds[gameState.l3Index];
+
+            if (gameState.l3CurrentActionIndex < roundData.actions.length) {
+                resetL3ActionDetection();
+                renderL3ActionsUI();
+                document.getElementById('l3-action-overlay').innerText = "🎉 Aksi betul! Seterusnya...";
+                setTimeout(runPoseTracking, 700);
+            } else {
+                // All actions in this round complete
+                renderL3ActionsUI();
+                disableAudioDucking(); // RESTORE BGM VOLUME
+
+                document.getElementById('l3-action-overlay').innerText = "🎉 CORAK IRAMA SELESAI! Semua aksi dikesan.";
+                document.getElementById('btn-next-l3').classList.remove('hidden');
+            }
+        }
+
+        function nextL3Round() {
+            gameState.l3Index++;
+            if (gameState.l3Index < level3Rounds.length) {
+                const video = document.getElementById('l3-video');
+                if (video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                document.getElementById('btn-next-l3').classList.add('hidden');
+                loadL3PreRound();
+            } else {
+                // Level 3 & All Game Complete!
+                addScore(500); // Bonus Final
+                gameState.levelScores.bonus += 500;
+                
+                // Turn off camera
+                const video = document.getElementById('l3-video');
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                }
+
+                showLevelComplete(3, 'YEAYYYY! Anda berjaya mengikut setiap corak irama dengan pergerakan yang betul!');
+            }
+        }
+
+        /* ====================================================
+           7. FINAL RESULT & LEADERBOARD SYSTEM
+           ==================================================== */
+        function showFinalResult() {
+            disableAudioDucking();
+
+            document.getElementById('res-avatar').innerText = gameState.character.avatar;
+            document.getElementById('res-name').innerText = gameState.playerName;
+
+            document.getElementById('res-l1-score').innerText = gameState.levelScores.l1;
+            document.getElementById('res-l2-score').innerText = gameState.levelScores.l2;
+            document.getElementById('res-l3-score').innerText = gameState.levelScores.l3;
+            document.getElementById('res-bonus-score').innerText = gameState.levelScores.bonus;
+            document.getElementById('res-total-score').innerText = gameState.score;
+
+            saveLeaderboardRecord(gameState.playerName, gameState.character.avatar, gameState.score);
+
+            launchConfetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+            showView('view-result');
+        }
+
+        function saveLeaderboardRecord(name, avatar, score) {
+            let records = JSON.parse(localStorage.getItem('maestro_lb_records') || '[]');
+            
+            // Cari jika nama pemain yang sama wujud
+            const existingIdx = records.findIndex(r => r.name.toLowerCase() === name.toLowerCase());
+
+            if (existingIdx !== -1) {
+                // Kemas kini jika score lebih tinggi
+                if (score > records[existingIdx].score) {
+                records[existingIdx].score = score;
+                    records[existingIdx].avatar = avatar;
+                    records[existingIdx].playedAt = new Date().toISOString();
+                }
+            } else {
+                records.push({ name, avatar, score, playedAt: new Date().toISOString() });
+            }
+
+            // Susun mata tertinggi ke terendah
+            records.sort((a, b) => b.score - a.score);
+
+            localStorage.setItem('maestro_lb_records', JSON.stringify(records));
+        }
+
+        function openLeaderboard() {
+            const records = JSON.parse(localStorage.getItem('maestro_lb_records') || '[]');
+            const container = document.getElementById('lb-content');
+            container.innerHTML = '';
+
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-gray-500">
+                        <p class="font-game text-lg text-purple-800">Belum ada rekod permainan.</p>
+                        <p class="text-sm">Jadilah pemain pertama!</p>
+                    </div>
+                `;
+            } else {
+                const medals = ['🥇', '🥈', '🥉'];
+                const top3 = records.slice(0, 3);
+
+                top3.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between p-3 rounded-2xl bg-purple-50 border-2 border-purple-200 font-game";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${medals[idx]}</span>
+                            <span class="text-2xl">${item.avatar}</span>
+                            <span class="text-purple-900 text-lg">${item.name}</span>
+                        </div>
+                        <span class="text-amber-600 text-xl">${item.score} ⭐</span>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            showView('view-leaderboard');
+        }
+
+        function resetAndPlayAgain() {
+            gameState.score = 0;
+            gameState.levelScores = { l1: 0, l2: 0, l3: 0, bonus: 0 };
+            gameState.unlockedLevel = 1;
+            updateScoreDisplay();
+            goToMissionMap();
+        }
+
+        /* ====================================================
+           8. MODALS & SETTINGS
+           ==================================================== */
+        function openSettings() {
+            document.getElementById('modal-settings').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('modal-settings').classList.add('hidden');
+        }
+
+        function onVolumeSliderChange(val) {
+            setAudioVolume(parseInt(val));
+        }
+
+        function confirmExitHome() {
+            document.getElementById('modal-confirm-exit').classList.remove('hidden');
+        }
+
+        function closeConfirmExit() {
+            document.getElementById('modal-confirm-exit').classList.add('hidden');
+        }
+
+        function executeExitHome() {
+            closeConfirmExit();
+            stopPoseTracking();
+            if (gameState.l2Recognition) {
+                try { gameState.l2Recognition.abort(); } catch (error) {}
+                gameState.l2Recognition = null;
+            }
+            const video = document.getElementById('l3-video');
+            if (video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+            disableAudioDucking();
+            showView('view-menu');
+        }
+
+        // Standard Window Resize / Load Init
+        window.addEventListener('load', () => {
+            updateScoreDisplay();
+        });
+    </script>
+</body>
+</html>

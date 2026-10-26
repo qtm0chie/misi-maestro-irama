@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aktiviti/Permainan AI</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: "Trebuchet MS", sans-serif;
+  background: linear-gradient(135deg, #ffe5f0, #f5e6ff, #fff4f8);
+  position: relative;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: float 12s infinite ease-in;
+}
+
+.bubble:nth-child(1) {
+  width: 55px;
+  height: 55px;
+  left: 10%;
+  animation-duration: 11s;
+}
+
+.bubble:nth-child(2) {
+  width: 85px;
+  height: 85px;
+  left: 35%;
+  animation-duration: 15s;
+}
+
+.bubble:nth-child(3) {
+  width: 40px;
+  height: 40px;
+  left: 65%;
+  animation-duration: 9s;
+}
+
+.bubble:nth-child(4) {
+  width: 70px;
+  height: 70px;
+  left: 85%;
+  animation-duration: 13s;
+}
+
+@keyframes float {
+  from {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  20% { opacity: 0.8; }
+  to {
+    transform: translateY(-120vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+h1 {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #c34f87;
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 24px;
+  text-shadow: 2px 3px 0 #ffffff;
+}
+</style>
+</head>
+
+<body>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+  <div class="bubble"></div>
+
+  <h1>Aktiviti/Permainan AI</h1>
+</body>
+</html>
